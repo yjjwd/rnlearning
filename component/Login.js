@@ -2,6 +2,7 @@ import  React,{Component} from 'react'
 import {Text,Image,View,TextInput,StyleSheet,FlatList,Botton,TouchableOpacity } from 'react-native';
 import { createStackNavigator, createAppContainer } from 'react-navigation'
 import {Back} from './module/Back'
+import {storage} from './Storage/storage'
 //屏幕宽度
 var Dimensions = require('Dimensions');
 var {width,height} = Dimensions.get('window');
@@ -14,6 +15,7 @@ export default class LoginScreen extends Component{
             username:'',
             password:'',
             token:'',
+            allData:{},
             logs:[],
         }
     }
@@ -43,6 +45,7 @@ export default class LoginScreen extends Component{
                 alert (json.message)
             }
         }) 
+        
     }
     Login(){
         
@@ -55,10 +58,7 @@ export default class LoginScreen extends Component{
             if(json.token !=null)
             {
                 this.setState({token:json.token})
-                global.User.username = this.username;
-                global.User.token = this.token;
                 alert("登陆成功");
-                console.log("qq");
                 this.UserMessage();
             }
             else if(json.message!=null)
@@ -70,14 +70,17 @@ export default class LoginScreen extends Component{
 
     UserMessage()
     {
-        const{token}=this.state
+        const{token,username,allData}=this.state
         fetch("https://www.kingdom174.work/Per_Information?token="+token)
         .then(res=>res.json())
         .then(json=>{
-            global.User.UserID=json.UserID
-            global.User.Sex=json.Sex
-            global.User.Status=json.Status
-            global.User.PhoneNumber=json.PhoneNumber
+            allData.username = username;
+            allData.token = token;
+            allData.UserID = json.UserID;
+            allData.Sex = json.Sex;
+            allData.Status = json.Status;
+            allData.PhoneNumber = json.PhoneNumber;
+            storage.save("UserData",allData);
             this.setState({
                 logs: [
                   {
@@ -89,7 +92,6 @@ export default class LoginScreen extends Component{
                   ...this.state.logs,
                 ],
               })
-           console.log(global.User.PhoneNumber);
         })
     }
 
@@ -143,9 +145,7 @@ export default class LoginScreen extends Component{
                     <Text style={styles.login} onPress={()=>{this.Register()}}>Register</Text>
                     <Text style={styles.login} onPress={()=>{this.UserMessage()}}>Message</Text>
                     <Text style={styles.login} onPress={() => this.props.navigation.navigate('Home')}>ToHome</Text>
-                    <Text>{global.User.username}</Text>
-                        <Text>{global.User.Sex}</Text>
-                        <Text>{global.User.PhoneNumber}</Text>
+                
                 </View>
                 <FlatList style={styles.logs} data={this.state.logs} renderItem={this._renderItem} />
                         

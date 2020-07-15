@@ -20,7 +20,7 @@ import MessageScreen from './component/Message'
 import OrderFormScreen from './component/OrderForm'
 import {TabAppNavigator}  from './component/TabNavigation'
 import DrawerHeader from './component/DrawerHeader/Header'
-import './component/User/global.js'
+
 const HomeNavigator =createStackNavigator(
   {
     Home:HomeScreen,
