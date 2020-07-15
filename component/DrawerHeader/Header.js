@@ -20,10 +20,10 @@ export default class drawerHeader extends React.Component {
   render () {
     return (
       <View>
-        <View style={Style.header}>
+        {/* <View style={Style.header}>
           <Image source={require('../../images/head_icon.png')} style={Style.headerImage} />
           <Text style={Style.headerName}> 用户名</Text>
-        </View>
+        </View> */}
         <StatusBar backgroundColor="white" barStyle="dark-content" />
         <ScrollView>
           <SafeAreaView>

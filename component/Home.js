@@ -134,7 +134,7 @@ export default class HomeScreen extends React.Component {
     var Pedal = []
     Pedal[0] = (point[0] * B * B - point[1] * A * B - A * C) / (A * A + B * B)
     Pedal[1] = (point[1] * A * A - A * B * point[0] - B * C) / (A * A + B * B)
-    // alert("垂足经度:"+Pedal[0]+"垂足纬度:"+Pedal[1]);
+    // alert("垂足经度:"+Pedal[0]+8"垂足纬度:"+Pedal[1]);
     return Pedal;
   }
   MIN(pp, ps, pe) {
@@ -196,7 +196,10 @@ export default class HomeScreen extends React.Component {
               city: json.regeocode.addressComponent.city,
               province: json.regeocode.addressComponent.province,
               latitude: latitude,
-              longitude: longitude
+              longitude: longitude,
+              Nowlatitude:latitude,
+              Nowlongitude:longitude,
+              NowLocation: json.regeocode.formatted_address
             })
           }).catch((error) => {
             console.log('request failed', error)
@@ -212,10 +215,11 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ counter: this.state.counter + 1 })
+
+    this.setState({ counter: this.state.counter + 1 });
     if (!this.state.monted) {
       this.Getcity();
-      this.setState({ monted: true })
+      this.setState({ monted: true });
     }
   }
 
@@ -236,6 +240,7 @@ export default class HomeScreen extends React.Component {
         ...this.state.logs,
       ],
     })
+    
   }
 
   //地图更新时触发
@@ -269,29 +274,29 @@ export default class HomeScreen extends React.Component {
   }
 
   NowLocationChange = ({ nativeEvent }) => {
-    if(this.state.poslock) return 0
-    const longitude = nativeEvent.longitude;
-    const latitude = nativeEvent.latitude;
-    if (this.state.searched == true) this.setState({ test: false }) //暂时弃用搜索标记
-    else if (nativeEvent.longitude != this.state.Nowlongitude || nativeEvent.Nowlatitude != this.state.latitude) {
-      this.setState({
-        Nowlongitude: nativeEvent.longitude,
-        Nowlatitude: nativeEvent.latitude,
-      }, () => {
-        fetch("https://restapi.amap.com/v3/geocode/regeo?key=4df0ef52b83b532834ffa118afa77de5&location=" + longitude + "," + latitude + "&poitype=城市&radius=1000&extensions=all&batch=false&roadlevel=0")
-          .then(response => response.json())
-          .then(json => {
-            this.setState({
-              city: json.regeocode.addressComponent.city,
-              province: json.regeocode.addressComponent.province,
-              NowLocation: json.regeocode.formatted_address,
-            })
-          }).catch((error) => {
-            console.log('request failed', error)
-          })
-      })
-    }
-    this.CheckMap()
+    // if(this.state.poslock) return 0
+    // const longitude = nativeEvent.longitude;
+    // const latitude = nativeEvent.latitude;
+    // if (this.state.searched == true) this.setState({ test: false }) //暂时弃用搜索标记
+    // else if (nativeEvent.longitude != this.state.Nowlongitude || nativeEvent.Nowlatitude != this.state.latitude) {
+    //   this.setState({
+    //     Nowlongitude: nativeEvent.longitude,
+    //     Nowlatitude: nativeEvent.latitude,
+    //   }, () => {
+    //     fetch("https://restapi.amap.com/v3/geocode/regeo?key=4df0ef52b83b532834ffa118afa77de5&location=" + longitude + "," + latitude + "&poitype=城市&radius=1000&extensions=all&batch=false&roadlevel=0")
+    //       .then(response => response.json())
+    //       .then(json => {
+    //         this.setState({
+    //           city: json.regeocode.addressComponent.city,
+    //           province: json.regeocode.addressComponent.province,
+    //           NowLocation: json.regeocode.formatted_address,
+    //         })
+    //       }).catch((error) => {
+    //         console.log('request failed', error)
+    //       })
+    //   })
+    // }
+    // this.CheckMap()
   }
 
   _renderItem = ({ item }) =>
@@ -399,6 +404,8 @@ export default class HomeScreen extends React.Component {
 
   Route(Fromlatitude, Fromlongitide, Tolatitude, Tolongitude)//得到导航路径点
   {
+   
+    console.log("https://restapi.amap.com/v3/direction/driving?key=4df0ef52b83b532834ffa118afa77de5&origin=" + Fromlongitide + "," + Fromlatitude + "&destination=" + Tolongitude + "," + Tolatitude + "&originid=&destinationid=&extensions=base&strategy=0&waypoints=&avoidpolygons=&avoidroad=");
     if (this.state.Nowlatitude && this.state.Togolatitude) {
       this._routeline = []
       var route_length = 0
@@ -439,8 +446,13 @@ export default class HomeScreen extends React.Component {
             // ]
           }
           this.setState({
-            RouteGuide: this._routeline, PreRoutePointLatitude: this._routeline[0].latitude, PreRoutePointLongtitude: this._routeline[0].longitude,
-            NextRoutePointLatitude: this._routeline[1].latitude, NextRoutePointLongtitude: this._routeline[1].longitude, RouteCount: 0, test3: route_length
+            RouteGuide: this._routeline, 
+            PreRoutePointLatitude: this._routeline[0].latitude, 
+            PreRoutePointLongtitude: this._routeline[0].longitude,
+            NextRoutePointLatitude: this._routeline[1].latitude, 
+            NextRoutePointLongtitude: this._routeline[1].longitude, 
+            RouteCount: 1, 
+            test3: route_length
           })
         }
         ).catch((error) => {
@@ -609,13 +621,14 @@ export default class HomeScreen extends React.Component {
     //先判断新位置是否脱离路线
     var min = this.FlatPointToLine(PrePoint.latitude, PrePoint.longitude, NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
     this.setState({ test4: min })
-    if (min < 500) //未脱离则单次移动动画，并计算新位置到两个点的距离，如果里离下一个点的距离小于离上一个点的距离
+    if (min < 350) //未脱离则单次移动动画，并计算新位置到两个点的距离，如果里离下一个点的距离小于离上一个点的距离
     {
       //如果单次移动距离大于三十米处理直到两个点距离小于30m，暂时取消
       this.setState({loop:'loop1'})
       this.RefreshDriverPosition(DriverNewPos)
       this.mapView.animateTo({ coordinate: DriverNewPos })
-      this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
+      //多余??
+      //this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
       let dis1 = this.getGreatCircleDistance(PrePoint.latitude, PrePoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
       let dis2 = this.getGreatCircleDistance(NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
       this.setState({dis1:dis1,dis2:dis2})
@@ -628,7 +641,8 @@ export default class HomeScreen extends React.Component {
           PrePoint = NextPoint
           NextPoint = route[count++]
         }
-        if (this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude) < 500) {
+        if (this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude) < 75) {
+          console.log(this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude))
           alert('行程结束')
         }
         this.setState({
@@ -830,7 +844,7 @@ export default class HomeScreen extends React.Component {
           onPress={this._logPressEvent}
           onLongPress={this._logLongPressEvent}
           onLocation={this._logLocationEvent}
-          onStatusChangeComplete={this.NowLocationChange}
+         // onStatusChangeComplete={this.NowLocationChange}
           showsScale={true}
           showsLocationButton={true}
           showsZoomControls={true}
