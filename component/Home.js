@@ -404,8 +404,7 @@ export default class HomeScreen extends React.Component {
 
   Route(Fromlatitude, Fromlongitide, Tolatitude, Tolongitude)//得到导航路径点
   {
-   
-    console.log("https://restapi.amap.com/v3/direction/driving?key=4df0ef52b83b532834ffa118afa77de5&origin=" + Fromlongitide + "," + Fromlatitude + "&destination=" + Tolongitude + "," + Tolatitude + "&originid=&destinationid=&extensions=base&strategy=0&waypoints=&avoidpolygons=&avoidroad=");
+    
     if (this.state.Nowlatitude && this.state.Togolatitude) {
       this._routeline = []
       var route_length = 0
@@ -610,58 +609,68 @@ export default class HomeScreen extends React.Component {
     //   this.setState({loop:'wait'})
     //   return 0
     // }
-    this._MoveFlag = true
-    var route = this.state.RouteGuide
-    var count = this.state.RouteCount
-    var PrePoint = { latitude: this.state.PreRoutePointLatitude, longitude: this.state.PreRoutePointLongtitude }
-    var NextPoint = { latitude: this.state.NextRoutePointLatitude, longitude: this.state.NextRoutePointLongtitude }
-    var DriverPos = { latitude: this.state.Driverlatitude, longitude: this.state.Driverlongitude }
-    var temp = { latitude: 0, longitude: 0 }
-    this.setState({ DriversPosition2: DriverNewPos, ...this.state.DriversPosition2,poslock:true})
-    //先判断新位置是否脱离路线
-    var min = this.FlatPointToLine(PrePoint.latitude, PrePoint.longitude, NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
-    this.setState({ test4: min })
-    if (min < 350) //未脱离则单次移动动画，并计算新位置到两个点的距离，如果里离下一个点的距离小于离上一个点的距离
-    {
-      //如果单次移动距离大于三十米处理直到两个点距离小于30m，暂时取消
-      this.setState({loop:'loop1'})
-      this.RefreshDriverPosition(DriverNewPos)
-      this.mapView.animateTo({ coordinate: DriverNewPos })
-      //多余??
-      //this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
-      let dis1 = this.getGreatCircleDistance(PrePoint.latitude, PrePoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
-      let dis2 = this.getGreatCircleDistance(NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
-      this.setState({dis1:dis1,dis2:dis2})
-      if (dis2 < dis1) {
-        PrePoint = NextPoint
-        NextPoint = route[count++]
-        while((PrePoint.longitude==NextPoint.longitude)&&(PrePoint.latitude==NextPoint.latitude))
-        {
-          alert('test')
+    if(this._MoveFlag == true){
+      var route = this.state.RouteGuide
+      var count = this.state.RouteCount
+      var PrePoint = { latitude: this.state.PreRoutePointLatitude, longitude: this.state.PreRoutePointLongtitude }
+      var NextPoint = { latitude: this.state.NextRoutePointLatitude, longitude: this.state.NextRoutePointLongtitude }
+      var DriverPos = { latitude: this.state.Driverlatitude, longitude: this.state.Driverlongitude }
+      var temp = { latitude: 0, longitude: 0 }
+      this.setState({ DriversPosition2: DriverNewPos, ...this.state.DriversPosition2,poslock:true})
+      //先判断新位置是否脱离路线
+      var min = this.FlatPointToLine(PrePoint.latitude, PrePoint.longitude, NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
+      this.setState({ test4: min })
+      if (min < 350) //未脱离则单次移动动画，并计算新位置到两个点的距离，如果里离下一个点的距离小于离上一个点的距离
+      {
+        //如果单次移动距离大于三十米处理直到两个点距离小于30m，暂时取消
+        this.setState({loop:'loop1'})
+        this.RefreshDriverPosition(DriverNewPos)
+        this.mapView.animateTo({ coordinate: DriverNewPos })
+        //多余??
+        //this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
+        let dis1 = this.getGreatCircleDistance(PrePoint.latitude, PrePoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
+        let dis2 = this.getGreatCircleDistance(NextPoint.latitude, NextPoint.longitude, DriverNewPos.latitude, DriverNewPos.longitude)
+        this.setState({dis1:dis1,dis2:dis2})
+        if (dis2 < dis1) {
           PrePoint = NextPoint
           NextPoint = route[count++]
+          while((PrePoint.longitude==NextPoint.longitude)&&(PrePoint.latitude==NextPoint.latitude))
+          {
+            alert('test')
+            PrePoint = NextPoint
+            NextPoint = route[count++]
+            
+          }
+          if (this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude) < 150) {
+          
+            alert('行程结束')
+            this._MoveFlag = false
+            this.setState({
+              RouteGuide:[],
+              PreRoutePointLatitude:0,
+              PreRoutePointLongtitude:0,
+              NextRoutePointLatitude:0,
+              NextRoutePointLongtitude:0
+            })
+          }
+          this.setState({
+            RouteCount: count, PreRoutePointLatitude: PrePoint.latitude, PreRoutePointLongtitude: PrePoint.longitude,
+            NextRoutePointLatitude: NextPoint.latitude, NextRoutePointLongtitude: NextPoint.longitude
+          })
+          
+          return 1
         }
-        if (this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude) < 75) {
-          console.log(this.getGreatCircleDistance(this.state.Driverlatitude,this.state.Driverlongitude,this.state.Togolatitude,this.state.Togolongitude))
-          alert('行程结束')
-        }
-        this.setState({
-          RouteCount: count, PreRoutePointLatitude: PrePoint.latitude, PreRoutePointLongtitude: PrePoint.longitude,
-          NextRoutePointLatitude: NextPoint.latitude, NextRoutePointLongtitude: NextPoint.longitude
-        })
-        this._MoveFlag = false
-        return 1
+      } else //脱离则重新计算路线
+      {
+        this.setState({loop:'loop2'})
+        this.Route(this.state.Driverlatitude, this.state.Driverlongitude, this.state.Togolatitude, this.state.Togolongitude)
+        //需要加一个锁，使得路径更新完成时才能输入新的坐标 完成
+        this.RefreshDriverPosition(DriverNewPos)
+        this.mapView.animateTo({ coordinate: DriverNewPos })
+        this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
+        
+        return 0
       }
-    } else //脱离则重新计算路线
-    {
-      this.setState({loop:'loop2'})
-      this.Route(this.state.Driverlatitude, this.state.Driverlongitude, this.state.Togolatitude, this.state.Togolongitude)
-      //需要加一个锁，使得路径更新完成时才能输入新的坐标 完成
-      this.RefreshDriverPosition(DriverNewPos)
-      this.mapView.animateTo({ coordinate: DriverNewPos })
-      this.setState({ Driverlatitude: DriverNewPos.latitude, Driverlongitude: DriverNewPos.longitude })
-      this._MoveFlag = false
-      return 0
     }
 
 
@@ -715,6 +724,7 @@ export default class HomeScreen extends React.Component {
 
   DriverMoveTest(){
     var data = { latitude: this.state.testinput1*1, longitude: this.state.testinput2*1}
+    this._MoveFlag = true
     this.DriverMove(data)
   }
 
@@ -961,7 +971,7 @@ export default class HomeScreen extends React.Component {
             <Image style={{ width: 25, height: 25, marginTop: 2 }} source={require('../images/qr_icon.png')} />
           </View>
         </View>
-        <ScrollView
+        {/* <ScrollView
           style={sty.funcbar}
           columnWrapperStyle={styles.columnStyle}
           horizontal={true}
@@ -992,7 +1002,7 @@ export default class HomeScreen extends React.Component {
         <View style={sty.func}>
           <Text style={sty.funcfont}>代驾2</Text>
         </View>
-        </ScrollView>
+        </ScrollView> */}
       </View>
     )
   }
@@ -1059,12 +1069,13 @@ const sty = StyleSheet.create(
     },
     bottom: {
       position: 'absolute',
-      paddingHorizontal: 40,
+      paddingHorizontal: 20,
       zIndex: 2,
       bottom: 20,
       left: 10,
       right: 10,
       width: screenWidth - 20,
+      borderRadius: 10,
       height: 160,
       backgroundColor: 'white',
       opacity: 0.9,
@@ -1075,9 +1086,10 @@ const sty = StyleSheet.create(
     BotTop: {
       flex: 1,
       padding: 10,
-      backgroundColor: 'white',
-      height: 20,
+      //backgroundColor: 'white',
+      height: 4,
       margin: 8,
+      marginBottom: 1,
       flexDirection: 'row',
       alignItems: 'center',
       alignContent: 'center',
@@ -1086,8 +1098,8 @@ const sty = StyleSheet.create(
     Bottom1: {
       flex: 1,
       padding: 2,
-      marginHorizontal: 25,
-      marginVertical: 10,
+      marginHorizontal: 15,
+      marginVertical: 5,
       borderWidth: 1,
       borderRadius: 10,
       borderColor: 'rgb(239,239,220)',

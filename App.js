@@ -46,9 +46,9 @@ const AppNavigator = createDrawerNavigator({
     screen: LoginScreen,
     navigationOptions: ({navigation}) => ({header: null})
   },
-  Main: {
-    screen: TabAppNavigator,
-  },
+  // Main: {
+  //   screen: TabAppNavigator,
+  // },
   OrderFrom:{
     screen:OrderFormScreen,
   },

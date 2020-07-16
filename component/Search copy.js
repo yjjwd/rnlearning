@@ -118,11 +118,11 @@ export default class Search extends React.Component {
           </View> :
           this.state.data.map((item) => {
             return (
-              <ScrollView style={styles.container}>
+              <View key={item.id} style={styles.container}>
                 <TouchableOpacity style={styles.item} onPress={() => this.Goback(item)} >
-                  <Mylist data={item} />
+                  <Mylist  data={item} />
                 </TouchableOpacity>
-              </ScrollView>
+              </View>
             )
           })
         }
@@ -240,13 +240,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: screenWidth,
+ 
     height: 80,
   },
   item: {
-    height: 80
+    height: 80,
   },
   title: {
-    fontSize: 24,
+    fontSize: 12,
     fontWeight: 'bold',
     color: 'black'
   },

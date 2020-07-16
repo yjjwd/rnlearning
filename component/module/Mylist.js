@@ -18,7 +18,7 @@ export default class Mylist extends React.Component{
             <View style={styles.course}>
               <Text style={styles.title}>{this.state.name}</Text>
               <View style={styles.introduction}>
-                  <Text>{this.state.address}</Text>
+                  {/* <Text>{this.state.address}</Text> */}
               </View>
             </View>
           </View>
@@ -41,28 +41,25 @@ export default class Mylist extends React.Component{
       flexDirection: 'row',
       backgroundColor: 'white',
       padding: 20,
-      height: 100
-    },
-    img: {
-      width: 100,
-      height: 100
+      height: 100,
+      
     },
     course: {
-      marginLeft: 20
+      marginLeft: 20,
+      height: 100,
+      
     },
     title: {
-      fontSize: 24,
+      fontSize: 12,
       fontWeight: 'bold',
       color: 'black'
     },
     introduction: {
       width: 260,
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize: 5,
+      lineHeight: 8,
       textAlign: 'justify',
       marginTop: 5
     },
-    item: {
-      height: 180
-    }
+
   });
